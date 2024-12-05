@@ -16,7 +16,6 @@ namespace Employees.Services
         {
             _connectionString = connectionString;
         }
-
         public List<Role> GetRolesForUserAsync(int userId)
         {
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -47,7 +46,6 @@ namespace Employees.Services
                     }
                 }
             }
-            
         }
 
         public void AddRoleAsync(Role role)
