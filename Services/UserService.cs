@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Employees.Models;
 using SharedModels;
 
 namespace Employees.Services
@@ -17,16 +16,6 @@ namespace Employees.Services
         {
             _connectionString = connectionString;
         }
-        public List<User> GetUsersForCurrentUserAsync(User currentUser)
-        {
-            if (currentUser.Role != "Администратор")
-            {
-                throw new UnauthorizedAccessException("У Вас нет прав для посещения данной вкладки. Доступ запрещён.");
-            }
-
-            return GetUsersAsync();
-        }
-
         public List<User> GetUsersAsync()
         {
             using (var connection = new NpgsqlConnection(_connectionString))
