@@ -11,10 +11,12 @@ namespace Employees.Services
     public class RoleService
     {
         private readonly string _connectionString;
+        private User _user;
 
-        public RoleService(string connectionString)
+        public RoleService(string connectionString, User currentUser)
         {
             _connectionString = connectionString;
+            _user = currentUser;
         }
         public List<Role> GetRolesForUserAsync(int userId)
         {

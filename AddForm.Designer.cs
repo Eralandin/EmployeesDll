@@ -131,7 +131,6 @@
             CreateBtn.TabIndex = 2;
             CreateBtn.Text = "Создать";
             CreateBtn.UseVisualStyleBackColor = false;
-            CreateBtn.Click += CreateBtn_Click;
             // 
             // CancelBtn
             // 
@@ -263,6 +262,7 @@
             Controls.Add(CreateBtn);
             Controls.Add(BottomPanel);
             Controls.Add(TopPanel);
+            DoubleBuffered = true;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(1092, 635);
             Name = "AddForm";

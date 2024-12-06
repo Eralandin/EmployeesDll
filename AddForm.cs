@@ -1,14 +1,200 @@
 using Npgsql;
 using SharedModels;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Data;
+using Employees.Services;
 
 namespace Employees
 {
     public partial class AddForm : Form, IConnectionStringConsumer
     {
         private string _connectionString;
+        private int _currentUserId;
         public AddForm()
         {
             InitializeComponent();
+        }
+        public void SetOpenType(string openType, int? selectedId)
+        {
+            try
+            {
+                if (openType == "Edit" && selectedId != null)
+                {
+                    using (var connection = new NpgsqlConnection(_connectionString))
+                    {
+                        connection.Open();
+                        string query = "SELECT * FROM tbUsers WHERE id = @SelectedId";
+                        using (var command = new NpgsqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("SelectedId", selectedId);
+                            using (var reader = command.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    UsernameTextBox.Text = reader.GetString(1);
+                                    RoleTextBox.Text = reader.GetString(3);
+                                    _currentUserId = reader.GetInt32(0);
+                                    PasswordCheckTextBox.Enabled = false;
+                                    PasswordTextBox.Enabled = false;
+                                    PasswordCheckLabel.Enabled = false;
+                                    PasswordLabel.Enabled = false;
+                                }
+                            }
+                        }
+                    }
+                    var userRoles = GetUserRoles((long)selectedId);
+                    MarkTreeViewNodes(TreeView, userRoles);
+                    CreateBtn.Click += UpdateUser;
+                }
+                else if (openType == "Delete")
+                {
+                    if (MessageBox.Show("Вы уверены, что хотите удалить этого пользователя?", "Удаление данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        using (var connection = new NpgsqlConnection(_connectionString))
+                        {
+                            connection.Open();
+                            string query = "DELETE FROM tbUsers WHERE id = @Id;";
+                            using (var command = new NpgsqlCommand(query, connection))
+                            {
+                                command.Parameters.AddWithValue("Id",selectedId);
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                        MessageBox.Show("Удаление пользователя успешно!");
+                        this.Close();
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
+                    
+                }
+                else if (openType == "Add")
+                {
+                    CreateBtn.Click += CreateBtn_Click;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        private List<Role> GetUserRoles(long userId)
+        {
+            var roles = new List<Role>();
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "SELECT id_menuitem, allow_read, allow_write, allow_edit, allow_delete FROM tbRoles WHERE id_user = @UserId;";
+                using (var command = new NpgsqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("UserId", userId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            roles.Add(new Role
+                            {
+                                MenuItemId = reader.GetInt64(reader.GetOrdinal("id_menuitem")),
+                                AllowRead = reader.GetBoolean(reader.GetOrdinal("allow_read")),
+                                AllowWrite = reader.GetBoolean(reader.GetOrdinal("allow_write")),
+                                AllowEdit = reader.GetBoolean(reader.GetOrdinal("allow_edit")),
+                                AllowDelete = reader.GetBoolean(reader.GetOrdinal("allow_delete"))
+                            });
+                        }
+                    }
+                }
+            }
+            return roles;
+        }
+        private void MarkTreeViewNodes(TreeView treeView, List<Role> roles)
+        {
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                MarkNodeRecursive(node, roles);
+            }
+        }
+
+        private void MarkNodeRecursive(TreeNode node, List<Role> roles)
+        {
+            if (node.Tag is Module module)
+            {
+                var role = roles.FirstOrDefault(r => r.MenuItemId == module.Id);
+                if (role != null)
+                {
+                    foreach (TreeNode childNode in node.Nodes)
+                    {
+                        switch (childNode.Text)
+                        {
+                            case "Чтение":
+                                childNode.Checked = role.AllowRead;
+                                break;
+                            case "Запись":
+                                childNode.Checked = role.AllowWrite;
+                                break;
+                            case "Изменение":
+                                childNode.Checked = role.AllowEdit;
+                                break;
+                            case "Удаление":
+                                childNode.Checked = role.AllowDelete;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            foreach (TreeNode child in node.Nodes)
+            {
+                MarkNodeRecursive(child, roles);
+            }
+        }
+        private void UpdateUser(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Вы уверены, что хотите обновить данные этого пользователя?","Обновление данных",MessageBoxButtons.YesNo,MessageBoxIcon.Question)== DialogResult.Yes)
+            {
+                if (string.IsNullOrEmpty(UsernameTextBox.Text) || string.IsNullOrEmpty(RoleTextBox.Text))
+                {
+                    MessageBox.Show("Пожалуйста, заполните все поля.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                try
+                {
+                    using (var connection = new NpgsqlConnection(_connectionString))
+                    {
+                        connection.Open();
+                        var query = "UPDATE tbUsers SET username = @Username, user_role = @Role WHERE id = @Id;";
+
+                        using (var command = new NpgsqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("Username", UsernameTextBox.Text);
+                            command.Parameters.AddWithValue("Role", RoleTextBox.Text);
+                            command.Parameters.AddWithValue("Id", _currentUserId);
+                            command.ExecuteNonQuery();
+                        }
+                        var rolesQuery = "DELETE from tbRoles WHERE id_user = @Id";
+                        using (var command = new NpgsqlCommand(rolesQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("Id", _currentUserId);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    var roles = GetSelectedRoles();
+
+
+                    SaveRoles(_currentUserId, roles);
+
+                    MessageBox.Show("Обновление данных пользователя прошло успешно!");
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            else
+            {
+                return;
+            }
         }
         public void SetConnectionString(string connectionString)
         {
@@ -38,7 +224,7 @@ namespace Employees
             {
                 connection.Open();
 
-                string query = "SELECT id, id_parent, menuitem_name, dll_name, function_name, sequence_number FROM tbmodules ORDER BY sequence_number";
+                string query = "SELECT id, id_parent, menuitem_name, dll_name, function_name, sequence_number,isnecessary FROM tbmodules WHERE isnecessary != true ORDER BY sequence_number";
                 using (var command = new NpgsqlCommand(query, connection))
                 {
                     using (var reader = command.ExecuteReader())
@@ -56,7 +242,8 @@ namespace Employees
                                 MenuItemName = reader.GetString(reader.GetOrdinal("menuitem_name")),
                                 DllName = reader.IsDBNull(reader.GetOrdinal("dll_name")) ? null : reader.GetString(reader.GetOrdinal("dll_name")),
                                 FunctionName = reader.IsDBNull(reader.GetOrdinal("function_name")) ? null : reader.GetString(reader.GetOrdinal("function_name")),
-                                SequenceNumber = reader.GetInt32(reader.GetOrdinal("sequence_number"))
+                                SequenceNumber = reader.GetInt32(reader.GetOrdinal("sequence_number")),
+                                IsNecessary = reader.GetBoolean(reader.GetOrdinal("isnecessary"))
                             };
 
                             modules.Add(module);
@@ -77,8 +264,8 @@ namespace Employees
             // Если у модуля есть дочерние элементы, не создаем чекбоксы
             if (!moduleDict.ContainsKey(module.Id) || moduleDict[module.Id].Count == 0)
             {
-                // Создаем дочерние узлы для типов прав (если нет дочерних элементов)
-                var readNode = new TreeNode("Чтение") { Checked = false }; // Можно установить Checked в зависимости от состояния
+                // Чекбоксы только на узлах без дочерних элементов
+                var readNode = new TreeNode("Чтение") { Checked = false };
                 var writeNode = new TreeNode("Запись") { Checked = false };
                 var editNode = new TreeNode("Изменение") { Checked = false };
                 var deleteNode = new TreeNode("Удаление") { Checked = false };
@@ -88,10 +275,9 @@ namespace Employees
                 node.Nodes.Add(editNode);
                 node.Nodes.Add(deleteNode);
             }
-
-            // Рекурсивно добавляем дочерние элементы (если они есть)
-            if (moduleDict.ContainsKey(module.Id))
+            else
             {
+                // Не добавляем чекбоксы, если у узла есть дочерние элементы
                 foreach (var childModule in moduleDict[module.Id])
                 {
                     node.Nodes.Add(CreateTreeNode(childModule, moduleDict));
@@ -123,24 +309,46 @@ namespace Employees
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
+                    // Сохраняем роли из TreeView
                     foreach (var role in roles)
                     {
-                        using (var command = new NpgsqlCommand(
-                            "INSERT INTO tbRoles (id_user, id_menuitem, allow_read, allow_write, allow_edit, allow_delete) " +
-                            "VALUES (@id_user, @id_menuitem, @allow_read, @allow_write, @allow_edit, @allow_delete)", connection, transaction))
-                        {
-                            command.Parameters.AddWithValue("@id_user", userId);
-                            command.Parameters.AddWithValue("@id_menuitem", role.MenuItemId);
-                            command.Parameters.AddWithValue("@allow_read", role.AllowRead);
-                            command.Parameters.AddWithValue("@allow_write", role.AllowWrite);
-                            command.Parameters.AddWithValue("@allow_edit", role.AllowEdit);
-                            command.Parameters.AddWithValue("@allow_delete", role.AllowDelete);
-
-                            command.ExecuteNonQuery();
-                        }
+                        SaveRole(userId, role, connection, transaction);
                     }
+
+                    // Сохраняем обязательные роли
+                    var necessaryModules = GetModulesFromDatabase().Where(m => m.IsNecessary).ToList();
+                    foreach (var necessaryModule in necessaryModules)
+                    {
+                        var role = new Role
+                        {
+                            MenuItemId = necessaryModule.Id,
+                            AllowRead = true, // Обязательные вкладки всегда доступны
+                            AllowWrite = false,
+                            AllowEdit = false,
+                            AllowDelete = false
+                        };
+
+                        SaveRole(userId, role, connection, transaction);
+                    }
+
                     transaction.Commit();
                 }
+            }
+        }
+        private void SaveRole(long userId, Role role, NpgsqlConnection connection, NpgsqlTransaction transaction)
+        {
+            using (var command = new NpgsqlCommand(
+                "INSERT INTO tbRoles (id_user, id_menuitem, allow_read, allow_write, allow_edit, allow_delete) " +
+                "VALUES (@id_user, @id_menuitem, @allow_read, @allow_write, @allow_edit, @allow_delete)", connection, transaction))
+            {
+                command.Parameters.AddWithValue("@id_user", userId);
+                command.Parameters.AddWithValue("@id_menuitem", role.MenuItemId);
+                command.Parameters.AddWithValue("@allow_read", role.AllowRead);
+                command.Parameters.AddWithValue("@allow_write", role.AllowWrite);
+                command.Parameters.AddWithValue("@allow_edit", role.AllowEdit);
+                command.Parameters.AddWithValue("@allow_delete", role.AllowDelete);
+
+                command.ExecuteNonQuery();
             }
         }
         private List<Role> GetSelectedRoles()
@@ -148,58 +356,36 @@ namespace Employees
             var roles = new List<Role>();
             foreach (TreeNode node in TreeView.Nodes)
             {
-                CollectRoles(node, roles);
+                CollectParentRoles(node, roles);
             }
             return roles;
         }
-        private void CollectRoles(TreeNode node, List<Role> roles)
+        private void CollectParentRoles(TreeNode node, List<Role> roles)
         {
             var module = (Module)node.Tag;
 
-            // Для модуля, всегда сохраняем значения прав с default значением false
-            var role = new Role
+            // Проверяем, есть ли дочерние элементы
+            if (node.Nodes.Cast<TreeNode>().Any(child => child.Text == "Чтение"))
             {
-                MenuItemId = module.Id,
-                AllowRead = false,   // По умолчанию все права false
-                AllowWrite = false,
-                AllowEdit = false,
-                AllowDelete = false
-            };
+                var allowRead = node.Nodes.Cast<TreeNode>().First(n => n.Text == "Чтение").Checked;
+                var allowWrite = node.Nodes.Cast<TreeNode>().First(n => n.Text == "Запись").Checked;
+                var allowEdit = node.Nodes.Cast<TreeNode>().First(n => n.Text == "Изменение").Checked;
+                var allowDelete = node.Nodes.Cast<TreeNode>().First(n => n.Text == "Удаление").Checked;
 
-            // Проверяем чекбоксы на наличие значений и изменяем их, если они отмечены
-            var allowReadNode = node.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == "Чтение");
-            var allowWriteNode = node.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == "Запись");
-            var allowEditNode = node.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == "Изменение");
-            var allowDeleteNode = node.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == "Удаление");
-
-            if (allowReadNode != null && allowReadNode.Checked)
-            {
-                role.AllowRead = true;
-            }
-            if (allowWriteNode != null && allowWriteNode.Checked)
-            {
-                role.AllowWrite = true;
-            }
-            if (allowEditNode != null && allowEditNode.Checked)
-            {
-                role.AllowEdit = true;
-            }
-            if (allowDeleteNode != null && allowDeleteNode.Checked)
-            {
-                role.AllowDelete = true;
+                roles.Add(new Role
+                {
+                    MenuItemId = module.Id,
+                    AllowRead = allowRead,
+                    AllowWrite = allowWrite,
+                    AllowEdit = allowEdit,
+                    AllowDelete = allowDelete
+                });
             }
 
-            // Добавляем роль в список
-            roles.Add(role);
-
-            // Рекурсивно обрабатываем дочерние узлы
+            // Рекурсивно обходим дочерние узлы
             foreach (TreeNode childNode in node.Nodes)
             {
-                // Игнорируем узлы типа прав (Чтение, Запись, Изменение, Удаление)
-                if (childNode.Text == "Чтение" || childNode.Text == "Запись" || childNode.Text == "Изменение" || childNode.Text == "Удаление")
-                    continue;
-
-                CollectRoles(childNode, roles);
+                CollectParentRoles(childNode, roles);
             }
         }
 

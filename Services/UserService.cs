@@ -11,10 +11,12 @@ namespace Employees.Services
     public class UserService
     {
         private readonly string _connectionString;
+        private User _currentUser;
 
-        public UserService(string connectionString)
+        public UserService(string connectionString, User currentUser)
         {
             _connectionString = connectionString;
+            _currentUser = currentUser;
         }
         public List<User> GetUsersAsync()
         {
@@ -107,6 +109,40 @@ namespace Employees.Services
                     command.Parameters.AddWithValue("Id", user.Id);
                     command.ExecuteNonQuery();
                 }
+            }
+        }
+        public void ChangePassword()
+        {
+            ChangePasswordForm changeForm = new ChangePasswordForm();
+            string newPassword;
+            if (changeForm.ShowDialog() == DialogResult.OK)
+            {
+                newPassword = changeForm.PasswordTextBox.Text;
+                changeForm.Close();
+            }
+            else
+            {
+                MessageBox.Show("Операция отменена пользователем");
+                return;
+            }
+            try
+            {
+                using (var connection = new NpgsqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    var query = "UPDATE tbUsers SET password_hash = @PasswordHash WHERE id = @Id;";
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("PasswordHash", User.HashPassword(newPassword));
+                        command.Parameters.AddWithValue("Id", _currentUser.Id);
+                        command.ExecuteNonQuery();
+                    }
+                }
+                MessageBox.Show("Смена пароля прошла успешно!");
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
