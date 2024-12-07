@@ -68,9 +68,9 @@
             FormNameLabel.ForeColor = SystemColors.ControlLightLight;
             FormNameLabel.Location = new Point(12, 40);
             FormNameLabel.Name = "FormNameLabel";
-            FormNameLabel.Size = new Size(247, 25);
+            FormNameLabel.Size = new Size(237, 25);
             FormNameLabel.TabIndex = 2;
-            FormNameLabel.Text = "Добавление сотрудника";
+            FormNameLabel.Text = "Работа с сотрудниками";
             // 
             // MainLabel
             // 
