@@ -30,10 +30,11 @@ namespace Employees.Services
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
-                var query = "SELECT id, username, password_hash, user_role, isadmin FROM tbUsers;";
+                var query = "SELECT id, username, password_hash, user_role, isadmin FROM tbUsers WHERE id != @Id;";
                 List<User> users = new List<User>();
                 using (var command = new NpgsqlCommand(query, connection))
                 {
+                    command.Parameters.AddWithValue("Id",_currentUser.Id);
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
