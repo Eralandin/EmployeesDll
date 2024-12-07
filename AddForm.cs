@@ -9,17 +9,26 @@ namespace Employees
     public partial class AddForm : Form, IConnectionStringConsumer
     {
         private string _connectionString;
-        private int _currentUserId;
+        public int _currentUserId;
         public AddForm()
         {
             InitializeComponent();
         }
-        public void SetOpenType(string openType, int? selectedId)
+        public void Message(string message)
+        {
+            MessageBox.Show(message);
+        }
+        public void SetOpenType(string openType, int? selectedId, bool isAdmin)
         {
             try
             {
                 if (openType == "Edit" && selectedId != null)
                 {
+                    if (isAdmin)
+                    {
+                        AdminCheck.Visible = true;
+                        ChangePasswordBtn.Visible = true;
+                    }
                     using (var connection = new NpgsqlConnection(_connectionString))
                     {
                         connection.Open();
@@ -34,6 +43,7 @@ namespace Employees
                                     UsernameTextBox.Text = reader.GetString(1);
                                     RoleTextBox.Text = reader.GetString(3);
                                     _currentUserId = reader.GetInt32(0);
+                                    AdminCheck.Checked = reader.GetBoolean(4);
                                     PasswordCheckTextBox.Enabled = false;
                                     PasswordTextBox.Enabled = false;
                                     PasswordCheckLabel.Enabled = false;
@@ -53,10 +63,40 @@ namespace Employees
                         using (var connection = new NpgsqlConnection(_connectionString))
                         {
                             connection.Open();
+                            string query = "SELECT isadmin FROM tbUsers WHERE id = @Id;";
+                            using (var command = new NpgsqlCommand(query, connection))
+                            {
+                                command.Parameters.AddWithValue("Id", selectedId);
+                                using (var reader = command.ExecuteReader())
+                                {
+                                    bool isSelectedAdmin = false;
+                                    if (reader.Read())
+                                    {
+                                        isSelectedAdmin = reader.GetBoolean(0);
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Выбранный пользователь не найден в базе данных! Попробуйте обновить страницу пользователей.");
+                                    }
+
+                                    if (isSelectedAdmin == true && isAdmin == false)
+                                    {
+                                        throw new Exception("Выбранный пользователь является администратором. У Вас не хватает прав для удаления этого пользователя.");
+                                    }
+                                    else if (isSelectedAdmin == true && isAdmin == true)
+                                    {
+                                        throw new Exception("Вы не можете удалить другого администратора.");
+                                    }
+                                }
+                            }
+                        }
+                        using (var connection = new NpgsqlConnection(_connectionString))
+                        {
+                            connection.Open();
                             string query = "DELETE FROM tbUsers WHERE id = @Id;";
                             using (var command = new NpgsqlCommand(query, connection))
                             {
-                                command.Parameters.AddWithValue("Id",selectedId);
+                                command.Parameters.AddWithValue("Id", selectedId);
                                 command.ExecuteNonQuery();
                             }
                         }
@@ -67,10 +107,14 @@ namespace Employees
                     {
                         this.Close();
                     }
-                    
+
                 }
                 else if (openType == "Add")
                 {
+                    if (isAdmin)
+                    {
+                        AdminCheck.Visible = true;
+                    }
                     CreateBtn.Click += CreateBtn_Click;
                 }
             }
@@ -79,7 +123,7 @@ namespace Employees
                 MessageBox.Show(ex.Message);
             }
         }
-        private List<Role> GetUserRoles(long userId)
+        public List<Role> GetUserRoles(long userId)
         {
             var roles = new List<Role>();
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -107,7 +151,7 @@ namespace Employees
             }
             return roles;
         }
-        private void MarkTreeViewNodes(TreeView treeView, List<Role> roles)
+        public void MarkTreeViewNodes(TreeView treeView, List<Role> roles)
         {
             foreach (TreeNode node in treeView.Nodes)
             {
@@ -148,9 +192,9 @@ namespace Employees
                 MarkNodeRecursive(child, roles);
             }
         }
-        private void UpdateUser(object sender, EventArgs e)
+        public void UpdateUser(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Вы уверены, что хотите обновить данные этого пользователя?","Обновление данных",MessageBoxButtons.YesNo,MessageBoxIcon.Question)== DialogResult.Yes)
+            if (MessageBox.Show("Вы уверены, что хотите обновить данные этого пользователя?", "Обновление данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 if (string.IsNullOrEmpty(UsernameTextBox.Text) || string.IsNullOrEmpty(RoleTextBox.Text))
                 {
@@ -162,13 +206,14 @@ namespace Employees
                     using (var connection = new NpgsqlConnection(_connectionString))
                     {
                         connection.Open();
-                        var query = "UPDATE tbUsers SET username = @Username, user_role = @Role WHERE id = @Id;";
+                        var query = "UPDATE tbUsers SET username = @Username, user_role = @Role, isadmin = @IsAdmin WHERE id = @Id;";
 
                         using (var command = new NpgsqlCommand(query, connection))
                         {
                             command.Parameters.AddWithValue("Username", UsernameTextBox.Text);
                             command.Parameters.AddWithValue("Role", RoleTextBox.Text);
                             command.Parameters.AddWithValue("Id", _currentUserId);
+                            command.Parameters.AddWithValue("IsAdmin", AdminCheck.Checked);
                             command.ExecuteNonQuery();
                         }
                         var rolesQuery = "DELETE from tbRoles WHERE id_user = @Id";
@@ -178,10 +223,11 @@ namespace Employees
                             command.ExecuteNonQuery();
                         }
                     }
-                    var roles = GetSelectedRoles();
-
-
-                    SaveRoles(_currentUserId, roles);
+                    if (!AdminCheck.Checked)
+                    {
+                        var roles = GetSelectedRoles();
+                        SaveRoles(_currentUserId, roles);
+                    }
 
                     MessageBox.Show("Обновление данных пользователя прошло успешно!");
                     this.Close();
@@ -292,11 +338,12 @@ namespace Employees
             {
                 connection.Open();
                 using (var command = new NpgsqlCommand(
-                    "INSERT INTO tbUsers (username, password_hash, user_role) VALUES (@username, @password_hash, @user_role) RETURNING id", connection))
+                    "INSERT INTO tbUsers (username, password_hash, user_role, isadmin) VALUES (@username, @password_hash, @user_role, @IsAdmin) RETURNING id", connection))
                 {
                     command.Parameters.AddWithValue("@username", username);
                     command.Parameters.AddWithValue("@password_hash", User.HashPassword(password));
                     command.Parameters.AddWithValue("@user_role", role);
+                    command.Parameters.AddWithValue("@IsAdmin", AdminCheck.Checked);
 
                     return (long)command.ExecuteScalar();
                 }
@@ -416,17 +463,61 @@ namespace Employees
 
                 long userId = SaveUser(username, password, role);
 
-                var roles = GetSelectedRoles();
+                if (!AdminCheck.Checked)
+                {
+                    var roles = GetSelectedRoles();
 
-                SaveRoles(userId, roles);
+                    SaveRoles(userId, roles);
+                }
 
                 MessageBox.Show("Пользователь успешно добавлен!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при сохранении данных: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void ChangePasswordBtn_Click(object sender, EventArgs e)
+        {
+            ChangePasswordForm changeForm = new ChangePasswordForm();
+            string newPassword;
+            if (changeForm.ShowDialog() == DialogResult.OK)
+            {
+                newPassword = changeForm.PasswordTextBox.Text;
+                changeForm.Close();
+            }
+            else
+            {
+                MessageBox.Show("Операция отменена пользователем");
+                return;
+            }
+            try
+            {
+                using (var connection = new NpgsqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    var query = "UPDATE tbUsers SET password_hash = @PasswordHash WHERE id = @Id;";
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("PasswordHash", User.HashPassword(newPassword));
+                        command.Parameters.AddWithValue("Id", _currentUserId);
+                        command.ExecuteNonQuery();
+                    }
+                }
+                MessageBox.Show("Смена пароля прошла успешно!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void CreateBtn_Click_1(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
         }
     }
 }

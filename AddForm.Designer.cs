@@ -33,8 +33,6 @@
             FormNameLabel = new Label();
             MainLabel = new Label();
             BottomPanel = new Panel();
-            CapsLockLabel = new Label();
-            LanguageLabel = new Label();
             CreateBtn = new Button();
             CancelBtn = new Button();
             UsernameLabel = new Label();
@@ -47,8 +45,9 @@
             TreeView = new TreeView();
             RoleLabel = new Label();
             RoleTextBox = new TextBox();
+            AdminCheck = new CheckBox();
+            ChangePasswordBtn = new Button();
             TopPanel.SuspendLayout();
-            BottomPanel.SuspendLayout();
             SuspendLayout();
             // 
             // TopPanel
@@ -87,37 +86,11 @@
             // BottomPanel
             // 
             BottomPanel.BackColor = Color.ForestGreen;
-            BottomPanel.Controls.Add(CapsLockLabel);
-            BottomPanel.Controls.Add(LanguageLabel);
             BottomPanel.Dock = DockStyle.Bottom;
             BottomPanel.Location = new Point(0, 550);
             BottomPanel.Name = "BottomPanel";
             BottomPanel.Size = new Size(1076, 46);
             BottomPanel.TabIndex = 1;
-            // 
-            // CapsLockLabel
-            // 
-            CapsLockLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            CapsLockLabel.AutoSize = true;
-            CapsLockLabel.Font = new Font("Bahnschrift", 15.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            CapsLockLabel.ForeColor = SystemColors.ControlLightLight;
-            CapsLockLabel.Location = new Point(859, 12);
-            CapsLockLabel.Name = "CapsLockLabel";
-            CapsLockLabel.Size = new Size(205, 25);
-            CapsLockLabel.TabIndex = 4;
-            CapsLockLabel.Text = "Клавиша Caps Lock:";
-            // 
-            // LanguageLabel
-            // 
-            LanguageLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            LanguageLabel.AutoSize = true;
-            LanguageLabel.Font = new Font("Bahnschrift", 15.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            LanguageLabel.ForeColor = SystemColors.ControlLightLight;
-            LanguageLabel.Location = new Point(12, 12);
-            LanguageLabel.Name = "LanguageLabel";
-            LanguageLabel.Size = new Size(128, 25);
-            LanguageLabel.TabIndex = 3;
-            LanguageLabel.Text = "Язык ввода:";
             // 
             // CreateBtn
             // 
@@ -131,6 +104,7 @@
             CreateBtn.TabIndex = 2;
             CreateBtn.Text = "Создать";
             CreateBtn.UseVisualStyleBackColor = false;
+            CreateBtn.Click += CreateBtn_Click_1;
             // 
             // CancelBtn
             // 
@@ -243,11 +217,38 @@
             RoleTextBox.Size = new Size(367, 40);
             RoleTextBox.TabIndex = 12;
             // 
+            // AdminCheck
+            // 
+            AdminCheck.AutoSize = true;
+            AdminCheck.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            AdminCheck.Location = new Point(12, 324);
+            AdminCheck.Name = "AdminCheck";
+            AdminCheck.RightToLeft = RightToLeft.Yes;
+            AdminCheck.Size = new Size(322, 37);
+            AdminCheck.TabIndex = 13;
+            AdminCheck.Text = "Права администратора";
+            AdminCheck.UseVisualStyleBackColor = true;
+            AdminCheck.Visible = false;
+            // 
+            // ChangePasswordBtn
+            // 
+            ChangePasswordBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            ChangePasswordBtn.Location = new Point(12, 367);
+            ChangePasswordBtn.Name = "ChangePasswordBtn";
+            ChangePasswordBtn.Size = new Size(260, 50);
+            ChangePasswordBtn.TabIndex = 14;
+            ChangePasswordBtn.Text = "Сменить пароль";
+            ChangePasswordBtn.UseVisualStyleBackColor = true;
+            ChangePasswordBtn.Visible = false;
+            ChangePasswordBtn.Click += ChangePasswordBtn_Click;
+            // 
             // AddForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1076, 596);
+            Controls.Add(ChangePasswordBtn);
+            Controls.Add(AdminCheck);
             Controls.Add(RoleTextBox);
             Controls.Add(RoleLabel);
             Controls.Add(TreeView);
@@ -270,8 +271,6 @@
             Text = "Добавление сотрудника";
             TopPanel.ResumeLayout(false);
             TopPanel.PerformLayout();
-            BottomPanel.ResumeLayout(false);
-            BottomPanel.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -282,19 +281,19 @@
         private Label MainLabel;
         private Label FormNameLabel;
         private Panel BottomPanel;
-        private Label LanguageLabel;
-        private Label CapsLockLabel;
-        private Button CreateBtn;
-        private Button CancelBtn;
         private Label UsernameLabel;
-        private TextBox UsernameTextBox;
-        private Label PasswordLabel;
-        private TextBox PasswordTextBox;
-        private Label PasswordCheckLabel;
-        private TextBox PasswordCheckTextBox;
-        private Label label1;
-        private TreeView TreeView;
         private Label RoleLabel;
-        private TextBox RoleTextBox;
+        private Button ChangePasswordBtn;
+        public Button CreateBtn;
+        public Button CancelBtn;
+        public TextBox UsernameTextBox;
+        public TextBox PasswordTextBox;
+        public TextBox PasswordCheckTextBox;
+        public Label label1;
+        public TreeView TreeView;
+        public TextBox RoleTextBox;
+        public CheckBox AdminCheck;
+        public Label PasswordLabel;
+        public Label PasswordCheckLabel;
     }
 }

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SharedModels;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace Employees.Services
 {
@@ -12,18 +14,23 @@ namespace Employees.Services
     {
         private readonly string _connectionString;
         private User _currentUser;
+        private Form? mainForm;
 
-        public UserService(string connectionString, User currentUser)
+        public UserService(string connectionString, User currentUser, Form? mainForm)
         {
             _connectionString = connectionString;
             _currentUser = currentUser;
+            if (mainForm != null)
+            {
+                this.mainForm = mainForm;
+            }
         }
         public List<User> GetUsersAsync()
         {
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
-                var query = "SELECT id, username, password_hash, user_role FROM tbUsers;";
+                var query = "SELECT id, username, password_hash, user_role, isadmin FROM tbUsers;";
                 List<User> users = new List<User>();
                 using (var command = new NpgsqlCommand(query, connection))
                 {
@@ -36,7 +43,8 @@ namespace Employees.Services
                                 Id = reader.GetInt32(0),
                                 Username = reader.GetString(1),
                                 PasswordHash = reader.GetString(2),
-                                Role = reader.GetString(3)
+                                Role = reader.GetString(3),
+                                IsAdmin = reader.GetBoolean(4)
                             });
                         }
                     }
@@ -109,6 +117,48 @@ namespace Employees.Services
                     command.Parameters.AddWithValue("Id", user.Id);
                     command.ExecuteNonQuery();
                 }
+            }
+        }
+        public void ChangeUserData()
+        {
+            AddForm addForm = new AddForm();
+            addForm.SetConnectionString(_connectionString);
+            addForm._currentUserId = _currentUser.Id;
+            if (_currentUser.IsAdmin)
+            {
+                addForm.AdminCheck.Visible = true;
+            }
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                string query = "SELECT * FROM tbUsers WHERE id = @SelectedId";
+                using (var command = new NpgsqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("SelectedId", _currentUser.Id);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            addForm.UsernameTextBox.Text = reader.GetString(1);
+                            addForm.RoleTextBox.Text = reader.GetString(3);
+                            addForm.AdminCheck.Checked = reader.GetBoolean(4);
+                            addForm.PasswordCheckTextBox.Enabled = false;
+                            addForm.PasswordTextBox.Enabled = false;
+                            addForm.PasswordCheckLabel.Enabled = false;
+                            addForm.PasswordLabel.Enabled = false;
+                        }
+                    }
+                }
+            }
+            var userRoles = addForm.GetUserRoles((long)_currentUser.Id);
+            addForm.MarkTreeViewNodes(addForm.TreeView, userRoles);
+            addForm.CreateBtn.Click += addForm.UpdateUser;
+            addForm.ShowDialog();
+            if (addForm.DialogResult == DialogResult.OK)
+            {
+                addForm.Message("Произведено изменение данных пользователя. Пройдите авторизацию повторно.");
+
+                mainForm.Close();
             }
         }
         public void ChangePassword()
