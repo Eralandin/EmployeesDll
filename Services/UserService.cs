@@ -122,7 +122,7 @@ namespace Employees.Services
         }
         public void ChangeUserData()
         {
-            AddForm addForm = new AddForm();
+            AddForm addForm = new AddForm(14f);
             addForm.SetConnectionString(_connectionString);
             addForm._currentUserId = _currentUser.Id;
             if (_currentUser.IsAdmin)

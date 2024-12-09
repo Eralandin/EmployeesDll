@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <Reference Include="SharedModels">
-      <HintPath>..\SharedModels\bin\Debug\net8.0\SharedModels.dll</HintPath>
+      <HintPath>..\SharedModels\bin\Debug\net8.0-windows\SharedModels.dll</HintPath>
     </Reference>
   </ItemGroup>
 

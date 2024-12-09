@@ -10,9 +10,30 @@ namespace Employees
     {
         private string _connectionString;
         public int _currentUserId;
-        public AddForm()
+        public AddForm(float fontSize)
         {
             InitializeComponent();
+            ChangeFontSizeInForm(this, fontSize);
+        }
+        public void ChangeFontSizeInForm(Control? parent, float newSize)
+        {
+            if (parent == null)
+            {
+                parent = this;
+            }
+            foreach (Control control in parent.Controls)
+            {
+                control.Font = new Font(control.Font.FontFamily, newSize, control.Font.Style);
+                if (control is Label || control is Button || control is CheckBox || control is ToolStripMenuItem || control is Panel)
+                {
+                    control.AutoSize = false;
+                }
+                if (control.HasChildren)
+                {
+                    ChangeFontSizeInForm(control, newSize);
+                }
+            }
+            this.Refresh();
         }
         public void Message(string message)
         {
@@ -194,52 +215,59 @@ namespace Employees
         }
         public void UpdateUser(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Вы уверены, что хотите обновить данные этого пользователя?", "Обновление данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            try
             {
-                if (string.IsNullOrEmpty(UsernameTextBox.Text) || string.IsNullOrEmpty(RoleTextBox.Text))
+                if (MessageBox.Show("Вы уверены, что хотите обновить данные этого пользователя?", "Обновление данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    MessageBox.Show("Пожалуйста, заполните все поля.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (string.IsNullOrEmpty(UsernameTextBox.Text) || string.IsNullOrEmpty(RoleTextBox.Text))
+                    {
+                        MessageBox.Show("Пожалуйста, заполните все поля.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    try
+                    {
+                        using (var connection = new NpgsqlConnection(_connectionString))
+                        {
+                            connection.Open();
+                            var query = "UPDATE tbUsers SET username = @Username, user_role = @Role, isadmin = @IsAdmin WHERE id = @Id;";
+
+                            using (var command = new NpgsqlCommand(query, connection))
+                            {
+                                command.Parameters.AddWithValue("Username", UsernameTextBox.Text);
+                                command.Parameters.AddWithValue("Role", RoleTextBox.Text);
+                                command.Parameters.AddWithValue("Id", _currentUserId);
+                                command.Parameters.AddWithValue("IsAdmin", AdminCheck.Checked);
+                                command.ExecuteNonQuery();
+                            }
+                            var rolesQuery = "DELETE from tbRoles WHERE id_user = @Id";
+                            using (var command = new NpgsqlCommand(rolesQuery, connection))
+                            {
+                                command.Parameters.AddWithValue("Id", _currentUserId);
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                        if (!AdminCheck.Checked)
+                        {
+                            var roles = GetSelectedRoles();
+                            SaveRoles(_currentUserId, roles);
+                        }
+
+                        MessageBox.Show("Обновление данных пользователя прошло успешно!");
+                        this.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                else
+                {
                     return;
                 }
-                try
-                {
-                    using (var connection = new NpgsqlConnection(_connectionString))
-                    {
-                        connection.Open();
-                        var query = "UPDATE tbUsers SET username = @Username, user_role = @Role, isadmin = @IsAdmin WHERE id = @Id;";
-
-                        using (var command = new NpgsqlCommand(query, connection))
-                        {
-                            command.Parameters.AddWithValue("Username", UsernameTextBox.Text);
-                            command.Parameters.AddWithValue("Role", RoleTextBox.Text);
-                            command.Parameters.AddWithValue("Id", _currentUserId);
-                            command.Parameters.AddWithValue("IsAdmin", AdminCheck.Checked);
-                            command.ExecuteNonQuery();
-                        }
-                        var rolesQuery = "DELETE from tbRoles WHERE id_user = @Id";
-                        using (var command = new NpgsqlCommand(rolesQuery, connection))
-                        {
-                            command.Parameters.AddWithValue("Id", _currentUserId);
-                            command.ExecuteNonQuery();
-                        }
-                    }
-                    if (!AdminCheck.Checked)
-                    {
-                        var roles = GetSelectedRoles();
-                        SaveRoles(_currentUserId, roles);
-                    }
-
-                    MessageBox.Show("Обновление данных пользователя прошло успешно!");
-                    this.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
             }
-            else
+            catch (Exception ex)
             {
-                return;
+                MessageBox.Show(ex.Message);
             }
         }
         public void SetConnectionString(string connectionString)
@@ -255,11 +283,17 @@ namespace Employees
 
             var moduleDict = modules.GroupBy(m => m.IdParent)
                                     .ToDictionary(g => g.Key, g => g.ToList());
-
-            foreach (var rootModule in moduleDict[0])
+            if (moduleDict.Count > 0)
             {
-                var rootNode = CreateTreeNode(rootModule, moduleDict);
-                TreeView.Nodes.Add(rootNode);
+                foreach (var rootModule in moduleDict[0])
+                {
+                    var rootNode = CreateTreeNode(rootModule, moduleDict);
+                    TreeView.Nodes.Add(rootNode);
+                }
+            }
+            else
+            {
+                TreeView.Nodes.Clear();
             }
         }
         private List<Module> GetModulesFromDatabase()

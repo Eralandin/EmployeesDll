@@ -58,17 +58,17 @@
             TopPanel.Dock = DockStyle.Top;
             TopPanel.Location = new Point(0, 0);
             TopPanel.Name = "TopPanel";
-            TopPanel.Size = new Size(1076, 80);
+            TopPanel.Size = new Size(1076, 99);
             TopPanel.TabIndex = 0;
             // 
             // FormNameLabel
             // 
             FormNameLabel.AutoSize = true;
-            FormNameLabel.Font = new Font("Bahnschrift", 15.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            FormNameLabel.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             FormNameLabel.ForeColor = SystemColors.ControlLightLight;
             FormNameLabel.Location = new Point(12, 40);
             FormNameLabel.Name = "FormNameLabel";
-            FormNameLabel.Size = new Size(237, 25);
+            FormNameLabel.Size = new Size(305, 33);
             FormNameLabel.TabIndex = 2;
             FormNameLabel.Text = "Работа с сотрудниками";
             // 
@@ -87,7 +87,7 @@
             // 
             BottomPanel.BackColor = Color.ForestGreen;
             BottomPanel.Dock = DockStyle.Bottom;
-            BottomPanel.Location = new Point(0, 550);
+            BottomPanel.Location = new Point(0, 653);
             BottomPanel.Name = "BottomPanel";
             BottomPanel.Size = new Size(1076, 46);
             BottomPanel.TabIndex = 1;
@@ -98,7 +98,7 @@
             CreateBtn.BackColor = Color.ForestGreen;
             CreateBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             CreateBtn.ForeColor = SystemColors.ControlLightLight;
-            CreateBtn.Location = new Point(10, 494);
+            CreateBtn.Location = new Point(10, 597);
             CreateBtn.Name = "CreateBtn";
             CreateBtn.Size = new Size(130, 50);
             CreateBtn.TabIndex = 2;
@@ -112,7 +112,7 @@
             CancelBtn.BackColor = Color.ForestGreen;
             CancelBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             CancelBtn.ForeColor = SystemColors.ControlLightLight;
-            CancelBtn.Location = new Point(934, 494);
+            CancelBtn.Location = new Point(934, 597);
             CancelBtn.Name = "CancelBtn";
             CancelBtn.Size = new Size(130, 50);
             CancelBtn.TabIndex = 3;
@@ -125,7 +125,7 @@
             UsernameLabel.AutoSize = true;
             UsernameLabel.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             UsernameLabel.ForeColor = SystemColors.ActiveCaptionText;
-            UsernameLabel.Location = new Point(10, 92);
+            UsernameLabel.Location = new Point(10, 119);
             UsernameLabel.Name = "UsernameLabel";
             UsernameLabel.Size = new Size(250, 33);
             UsernameLabel.TabIndex = 3;
@@ -134,7 +134,7 @@
             // UsernameTextBox
             // 
             UsernameTextBox.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            UsernameTextBox.Location = new Point(266, 89);
+            UsernameTextBox.Location = new Point(266, 116);
             UsernameTextBox.Name = "UsernameTextBox";
             UsernameTextBox.Size = new Size(300, 40);
             UsernameTextBox.TabIndex = 4;
@@ -144,7 +144,7 @@
             PasswordLabel.AutoSize = true;
             PasswordLabel.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             PasswordLabel.ForeColor = SystemColors.ActiveCaptionText;
-            PasswordLabel.Location = new Point(12, 152);
+            PasswordLabel.Location = new Point(12, 179);
             PasswordLabel.Name = "PasswordLabel";
             PasswordLabel.Size = new Size(110, 33);
             PasswordLabel.TabIndex = 5;
@@ -153,7 +153,7 @@
             // PasswordTextBox
             // 
             PasswordTextBox.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            PasswordTextBox.Location = new Point(128, 149);
+            PasswordTextBox.Location = new Point(128, 176);
             PasswordTextBox.Name = "PasswordTextBox";
             PasswordTextBox.Size = new Size(438, 40);
             PasswordTextBox.TabIndex = 6;
@@ -163,7 +163,7 @@
             PasswordCheckLabel.AutoSize = true;
             PasswordCheckLabel.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             PasswordCheckLabel.ForeColor = SystemColors.ActiveCaptionText;
-            PasswordCheckLabel.Location = new Point(12, 213);
+            PasswordCheckLabel.Location = new Point(12, 240);
             PasswordCheckLabel.Name = "PasswordCheckLabel";
             PasswordCheckLabel.Size = new Size(278, 33);
             PasswordCheckLabel.TabIndex = 7;
@@ -172,7 +172,7 @@
             // PasswordCheckTextBox
             // 
             PasswordCheckTextBox.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            PasswordCheckTextBox.Location = new Point(296, 210);
+            PasswordCheckTextBox.Location = new Point(296, 237);
             PasswordCheckTextBox.Name = "PasswordCheckTextBox";
             PasswordCheckTextBox.Size = new Size(270, 40);
             PasswordCheckTextBox.TabIndex = 8;
@@ -182,7 +182,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             label1.ForeColor = SystemColors.ActiveCaptionText;
-            label1.Location = new Point(572, 92);
+            label1.Location = new Point(572, 119);
             label1.Name = "label1";
             label1.Size = new Size(221, 33);
             label1.TabIndex = 9;
@@ -193,9 +193,9 @@
             TreeView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TreeView.CheckBoxes = true;
             TreeView.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            TreeView.Location = new Point(572, 128);
+            TreeView.Location = new Point(572, 155);
             TreeView.Name = "TreeView";
-            TreeView.Size = new Size(492, 309);
+            TreeView.Size = new Size(492, 412);
             TreeView.TabIndex = 10;
             // 
             // RoleLabel
@@ -203,7 +203,7 @@
             RoleLabel.AutoSize = true;
             RoleLabel.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             RoleLabel.ForeColor = SystemColors.ActiveCaptionText;
-            RoleLabel.Location = new Point(12, 271);
+            RoleLabel.Location = new Point(12, 298);
             RoleLabel.Name = "RoleLabel";
             RoleLabel.Size = new Size(188, 33);
             RoleLabel.TabIndex = 11;
@@ -212,7 +212,7 @@
             // RoleTextBox
             // 
             RoleTextBox.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            RoleTextBox.Location = new Point(199, 268);
+            RoleTextBox.Location = new Point(199, 295);
             RoleTextBox.Name = "RoleTextBox";
             RoleTextBox.Size = new Size(367, 40);
             RoleTextBox.TabIndex = 12;
@@ -221,7 +221,7 @@
             // 
             AdminCheck.AutoSize = true;
             AdminCheck.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            AdminCheck.Location = new Point(12, 324);
+            AdminCheck.Location = new Point(12, 351);
             AdminCheck.Name = "AdminCheck";
             AdminCheck.RightToLeft = RightToLeft.Yes;
             AdminCheck.Size = new Size(322, 37);
@@ -233,7 +233,7 @@
             // ChangePasswordBtn
             // 
             ChangePasswordBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            ChangePasswordBtn.Location = new Point(12, 367);
+            ChangePasswordBtn.Location = new Point(12, 394);
             ChangePasswordBtn.Name = "ChangePasswordBtn";
             ChangePasswordBtn.Size = new Size(260, 50);
             ChangePasswordBtn.TabIndex = 14;
@@ -246,7 +246,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1076, 596);
+            ClientSize = new Size(1076, 699);
             Controls.Add(ChangePasswordBtn);
             Controls.Add(AdminCheck);
             Controls.Add(RoleTextBox);
