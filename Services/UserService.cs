@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using SharedModels;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Net.NetworkInformation;
 
 namespace Employees.Services
 {
     public class UserService
     {
+        public string Name = "Сотрудники";
         private readonly string _connectionString;
         private User _currentUser;
         private Form? mainForm;
@@ -24,6 +26,10 @@ namespace Employees.Services
             {
                 this.mainForm = mainForm;
             }
+        }
+        public string GetSelect()
+        {
+            return "SELECT * FROM tbUsers;";
         }
         public List<User> GetUsersAsync()
         {
@@ -128,6 +134,12 @@ namespace Employees.Services
             if (_currentUser.IsAdmin)
             {
                 addForm.AdminCheck.Visible = true;
+                addForm.TreeView.Enabled = true;
+            }
+            else
+            {
+                addForm.AdminCheck.Visible = false;
+                addForm.TreeView.Enabled = false;
             }
             using (var connection = new NpgsqlConnection(_connectionString))
             {
