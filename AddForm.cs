@@ -285,13 +285,10 @@ namespace Employees
                                     .ToDictionary(g => g.Key, g => g.ToList());
             if (moduleDict.Count > 0)
             {
-                foreach(var module in moduleDict)
+                foreach (var rootModule in moduleDict[0])
                 {
-                    foreach (var rootModule in moduleDict[module.Key])
-                    {
-                        var rootNode = CreateTreeNode(rootModule, moduleDict);
-                        TreeView.Nodes.Add(rootNode);
-                    }
+                    var rootNode = CreateTreeNode(rootModule, moduleDict);
+                    TreeView.Nodes.Add(rootNode);
                 }
             }
             else

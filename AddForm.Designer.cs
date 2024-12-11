@@ -58,7 +58,7 @@
             TopPanel.Dock = DockStyle.Top;
             TopPanel.Location = new Point(0, 0);
             TopPanel.Name = "TopPanel";
-            TopPanel.Size = new Size(1076, 99);
+            TopPanel.Size = new Size(1076, 88);
             TopPanel.TabIndex = 0;
             // 
             // FormNameLabel
@@ -87,7 +87,7 @@
             // 
             BottomPanel.BackColor = Color.ForestGreen;
             BottomPanel.Dock = DockStyle.Bottom;
-            BottomPanel.Location = new Point(0, 653);
+            BottomPanel.Location = new Point(0, 514);
             BottomPanel.Name = "BottomPanel";
             BottomPanel.Size = new Size(1076, 46);
             BottomPanel.TabIndex = 1;
@@ -98,7 +98,7 @@
             CreateBtn.BackColor = Color.ForestGreen;
             CreateBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             CreateBtn.ForeColor = SystemColors.ControlLightLight;
-            CreateBtn.Location = new Point(10, 597);
+            CreateBtn.Location = new Point(10, 458);
             CreateBtn.Name = "CreateBtn";
             CreateBtn.Size = new Size(130, 50);
             CreateBtn.TabIndex = 2;
@@ -112,7 +112,7 @@
             CancelBtn.BackColor = Color.ForestGreen;
             CancelBtn.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             CancelBtn.ForeColor = SystemColors.ControlLightLight;
-            CancelBtn.Location = new Point(934, 597);
+            CancelBtn.Location = new Point(436, 458);
             CancelBtn.Name = "CancelBtn";
             CancelBtn.Size = new Size(130, 50);
             CancelBtn.TabIndex = 3;
@@ -195,7 +195,7 @@
             TreeView.Font = new Font("Bahnschrift", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
             TreeView.Location = new Point(572, 155);
             TreeView.Name = "TreeView";
-            TreeView.Size = new Size(492, 412);
+            TreeView.Size = new Size(492, 353);
             TreeView.TabIndex = 10;
             // 
             // RoleLabel
@@ -223,7 +223,7 @@
             AdminCheck.Font = new Font("Bahnschrift", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             AdminCheck.Location = new Point(12, 351);
             AdminCheck.Name = "AdminCheck";
-            AdminCheck.RightToLeft = RightToLeft.Yes;
+            AdminCheck.RightToLeft = RightToLeft.No;
             AdminCheck.Size = new Size(322, 37);
             AdminCheck.TabIndex = 13;
             AdminCheck.Text = "Права администратора";
@@ -246,7 +246,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1076, 699);
+            ClientSize = new Size(1076, 560);
             Controls.Add(ChangePasswordBtn);
             Controls.Add(AdminCheck);
             Controls.Add(RoleTextBox);
@@ -265,7 +265,7 @@
             Controls.Add(TopPanel);
             DoubleBuffered = true;
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new Size(1092, 635);
+            MinimumSize = new Size(1092, 599);
             Name = "AddForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Добавление сотрудника";
